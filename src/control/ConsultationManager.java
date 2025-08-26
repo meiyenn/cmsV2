@@ -20,13 +20,11 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Comparator;
-import java.util.InputMismatchException;
 import java.util.Locale;
-import java.util.Scanner;
 
 /**
  *
- * @author USER
+ * @author Ng Mei Yen
  */
 public class ConsultationManager {
     //control handle logic only
@@ -38,7 +36,6 @@ public class ConsultationManager {
 
     private ConsultationDAO consultationDAO;
     private PatientDAO patientDAO;
-    private Scanner sc = new Scanner(System.in);
 
     public ConsultationManager() {
         this.consultationDAO = new ConsultationDAO();
@@ -47,7 +44,6 @@ public class ConsultationManager {
         this.consultationList = consultationDAO.getAllConsultation();
         this.patientList = patientDAO.getAllPatients();
 
-        //temporarily get doctors from ConsultationDAO until combine!!!!!!!!!!!
         this.doctorList = consultationDAO.getAllDoctors();
 
         this.consultationMenu = new ConsultationMenu(this);
@@ -56,12 +52,10 @@ public class ConsultationManager {
     public ConsultationManager(ConsultationDAO consultationDAO, PatientDAO patientDAO) {
         this.consultationDAO = consultationDAO;
         this.patientDAO = patientDAO;
-
         this.consultationList = consultationDAO.getAllConsultation();
         this.patientList = patientDAO.getAllPatients();
-        this.doctorList = consultationDAO.getAllDoctors(); // get doctors from ConsultationDAO temporarily
-
-        this.consultationMenu = new ConsultationMenu();
+        this.doctorList = consultationDAO.getAllDoctors();
+        this.consultationMenu = new ConsultationMenu(this);
     }
 
     public void consultationManagement(int choice) {
@@ -79,17 +73,20 @@ public class ConsultationManager {
                 searchConsultation();
                 break;
             case 5:
-                patientVisitationReport();
+                sortConsultation();
                 break;
             case 6:
-                consultationStatusReport();
+                patientVisitationReport();
                 break;
             case 7:
-                //completeConsultation();
+                consultationStatusReport();
+                break;
+            case 8:
+                completeConsultation(); //- use by doctor, after combine, remove it!
                 break;
             case 0:
                 System.out.println("\nReturning to Main Menu...");
-                return;
+                break;
         }
     }
 
@@ -97,11 +94,8 @@ public class ConsultationManager {
         int choice;
         do {
             choice = consultationMenu.consultationMenu();
-            if (choice != 0) {
-                consultationManagement(choice);
-            }
+            consultationManagement(choice);
         } while (choice != 0);
-        System.out.println("Returning to Main Menu...");
     }
 
     //check if patient has consultation more than 1 time
@@ -164,7 +158,7 @@ public class ConsultationManager {
         return timeList.contains(time);
     }
 
-    public ListInterface<LocalTime> getAvailableSlotsForDoctor(Doctor selectedDoctor, LocalDate date, Consultation originalConsultation) {
+    private ListInterface<LocalTime> getAvailableSlotsForDoctor(Doctor selectedDoctor, LocalDate date, Consultation originalConsultation) {
         if (!isDoctorWorkingToday(selectedDoctor.getDutySchedule(), date.getDayOfWeek())) {
             System.out.println("Doctor is not on duty on " + date + ".");
             return null;
@@ -216,10 +210,7 @@ public class ConsultationManager {
         String ic = consultationMenu.inputPatientIC();
         Patient patient = patientDAO.findPatientByIC(ic);
         if (patient == null) {
-            System.out.println("Patient not found.");
-            System.out.println("Please do the registration first-");
-            System.out.print("Press any key to return: ");
-            String input = sc.nextLine();
+            String input = consultationMenu.inputReturn();
             if (!input.isEmpty() || input.isEmpty()) {//type anything or enter to return
                 return;
             }
@@ -285,8 +276,8 @@ public class ConsultationManager {
 
             } else {
                 System.out.println("\n=== Available Time Slots ===");
-                for (LocalTime slotTime : availableSlots) {
-                    System.out.print(slotTime + " | ");
+                for (LocalTime slot : availableSlots) {
+                    System.out.print(slot + " | ");
                 }
                 System.out.println();
 
@@ -352,7 +343,7 @@ public class ConsultationManager {
             }
         }
 
-        System.out.println("=".repeat(108));
+        System.out.println("=".repeat(172));
     }
 
     public void viewTodayQueue() {
@@ -368,7 +359,7 @@ public class ConsultationManager {
             }
         }
 
-        System.out.println("=".repeat(108));
+        System.out.println("=".repeat(172));
     }
 
     private ListInterface<Consultation> getTodayConsultations() {
@@ -391,7 +382,7 @@ public class ConsultationManager {
         System.out.println("");
         System.out.println("=== Update Consultation ===");
         boolean reenter;
-        int position=-1;
+        int position = -1;
         Consultation consultationToUpdate = null;
         do {
             reenter = false;
@@ -404,7 +395,6 @@ public class ConsultationManager {
             // define the comparator to match by ID
             Comparator<Consultation> byId = Comparator.comparing(c -> c.getConsultationID());
 
-            // search using the ADT method
             position = consultationList.searchByKey(byId, key);
 
             if (position != -1) {
@@ -414,7 +404,6 @@ public class ConsultationManager {
                     consultationToUpdate = null;
                 }
             }
-
 
             if (consultationToUpdate == null) {
                 System.out.print("Consultation with ID " + consultationId + " not found or status is not updatable. Want to reenter the Consultation ID?(yes/no): ");
@@ -440,10 +429,10 @@ public class ConsultationManager {
 
             switch (choice) {
                 case "1":
-                    updateTime(consultationToUpdate,position);
+                    updateTime(consultationToUpdate, position);
                     break;
                 case "2":
-                    updateStatus(consultationToUpdate,position);
+                    updateStatus(consultationToUpdate, position);
                     break;
                 default:
                     System.out.println("Invalid choice. Please enter 1 or 2 only.");
@@ -465,7 +454,7 @@ public class ConsultationManager {
     }
 
     //update status
-    private void updateStatus(Consultation consultation, int position) {
+    public void updateStatus(Consultation consultation, int position) {
         System.out.println("");
         System.out.println("== Update Consultation Status ==");
         boolean reenterStatus;
@@ -486,8 +475,7 @@ public class ConsultationManager {
                     newStatus = "No-show";
                     break;
                 default:
-                    System.out.println("Invalid choice. Want to reenter status choice? (yes/no)");
-                    String choice = sc.nextLine().trim();
+                    String choice = consultationMenu.inputReenterStatus();
                     if (choice.equalsIgnoreCase("yes")) {
                         reenterStatus = true;
                     } else {
@@ -583,12 +571,12 @@ public class ConsultationManager {
                 LocalDateTime.of(newDate, chosenTime),
                 consultation.getReason()
         );
-        
+
         updatedConsultation.setStatus(consultation.getStatus());
         consultationList.replace(position, updatedConsultation);
 
         System.out.println("Consultation time updated successfully!");
-        System.out.println("New Consultation Time: " + consultation.getDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
+        System.out.println("New Consultation Time: " + updatedConsultation.getDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
     }
 
     //search
@@ -723,6 +711,78 @@ public class ConsultationManager {
         }
     }
 
+    //sort and display
+    public void sortConsultation() {
+        System.out.println("");
+        System.out.println("=== Sort and Display Consultation ===");
+        int opt = -1;
+
+        do {
+
+            opt = consultationMenu.inputSortOption();
+
+            switch (opt) {
+                case 1:
+                    sortByDate();
+                    break;
+                case 2:
+                    sortByPatientName();
+                    break;
+                case 3:
+                    sortByDoctorName();
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again");
+            }
+        } while (opt != 0);
+    }
+
+    //copy from original
+    private ListInterface<Consultation> copyConsultationList(ListInterface<Consultation> original) {
+        ListInterface<Consultation> sortResults = new CircularDoublyLinkedList<>();
+        for (int i = 1; i <= original.getNumberOfEntries(); i++) {
+            sortResults.add(original.getEntry(i));
+        }
+        return sortResults;
+    }
+
+    //sort by date&time
+    public void sortByDate() {
+        System.out.println("");
+
+        ListInterface<Consultation> sortResults = copyConsultationList(consultationDAO.getAllConsultation());
+
+        int order = consultationMenu.inputSortOrder();
+
+        if (order == 1) {
+            System.out.println("== Sort By Date (Ascending) ==");
+            sortResults.mergeSort((c1, c2) -> c1.getDateTime().compareTo(c2.getDateTime()));
+        } else if (order == 2) {
+            System.out.println("== Sort By Date (Descending) ==");
+            sortResults.mergeSort((c1, c2) -> c2.getDateTime().compareTo(c1.getDateTime()));
+        }
+
+        viewConsultationRecord(sortResults);
+    }
+
+    //sort by patient name
+    public void sortByPatientName() {
+        System.out.println("");
+        System.out.println("== Sort By Patient Name ==");
+        ListInterface<Consultation> sortResults = copyConsultationList(consultationDAO.getAllConsultation());
+        sortResults.mergeSort((c1, c2) -> c1.getPatient().getName().compareTo(c2.getPatient().getName()));
+        viewConsultationRecord(sortResults);
+    }
+
+    //sort by doctor name
+    public void sortByDoctorName() {
+        System.out.println("");
+        System.out.println("== Sort By Doctor Name ==");
+        ListInterface<Consultation> sortResults = copyConsultationList(consultationDAO.getAllConsultation());
+        sortResults.mergeSort((c1, c2) -> c1.getDoctor().getName().compareTo(c2.getDoctor().getName()));
+        viewConsultationRecord(sortResults);
+    }
+
     public void consultationStatusReport() {
         System.out.println("");
 
@@ -833,8 +893,7 @@ public class ConsultationManager {
         System.out.println("================================");
         Consultation selectedConsultation = null;
         while (selectedConsultation == null) {
-            System.out.print("Enter Consultation ID to complete (enter '0' to go back): ");
-            String id = sc.nextLine();
+            String id = consultationMenu.inputCIDComplete();
 
             if (id.equals("0")) {
                 System.out.println("You have cancelled the action");
@@ -867,8 +926,7 @@ public class ConsultationManager {
 
         boolean followUp = false;
         while (true) {
-            System.out.print("Is a follow-up required? (yes/no): ");
-            String response = sc.nextLine().trim().toLowerCase();
+            String response = consultationMenu.inputFUoption();
             if (response.equals("yes")) {
                 followUp = true;
                 break;
@@ -903,8 +961,7 @@ public class ConsultationManager {
 
         //validation for date and time
         while (!validDateTime) {
-            System.out.print("Enter follow-up date and time (DD-MM-YYYY HH:MM): ");
-            dateTimeStr = sc.nextLine();
+            dateTimeStr = consultationMenu.inputFUdate();
             try {
                 newDateTime = LocalDateTime.parse(dateTimeStr, formatter);
 
@@ -918,8 +975,7 @@ public class ConsultationManager {
             }
         }
 
-        ConsultationDAO cDao = new ConsultationDAO();
-        Consultation newFollowUp = new Consultation(cDao.generateID(), originalConsultation.getPatient(), originalConsultation.getDoctor(), newDateTime, "Follow-up for " + originalConsultation.getReason());
+        Consultation newFollowUp = new Consultation(consultationDAO.generateID(), originalConsultation.getPatient(), originalConsultation.getDoctor(), newDateTime, "Follow-up for " + originalConsultation.getReason());
 
         // record down previous consultationId
         newFollowUp.setPreviousConsultationId(originalConsultation.getConsultationID());
@@ -930,12 +986,7 @@ public class ConsultationManager {
         System.out.println("New Consultation ID: " + newFollowUp.getConsultationID());
         System.out.println("Scheduled for: " + newFollowUp.getDateTime());
     }
-    
-    // get consultation by ID for Treatment module integration
-    public Consultation getConsultationByID(String consultationId) {
-        return consultationDAO.findConsultationByID(consultationId);
-    }
-    
+
     // get all consultations for Treatment module integration
     public ListInterface<Consultation> getAllConsultations() {
         return consultationDAO.getAllConsultation();
