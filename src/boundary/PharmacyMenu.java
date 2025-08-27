@@ -23,8 +23,8 @@ public class PharmacyMenu {
     private Scanner scanner = new Scanner(System.in);
     private PharmacyManager pharmacyManager;
 
-    public PharmacyMenu() {
-        this.pharmacyManager = new PharmacyManager();
+    public PharmacyMenu(PharmacyManager pharmacyManager) {
+        this.pharmacyManager = pharmacyManager;
         // Set the pharmacy manager in the report utility
         PharmacyReport.setPharmacyManager(pharmacyManager);
     }

@@ -37,25 +37,25 @@ public class ConsultationManager {
     private ConsultationDAO consultationDAO;
     private PatientDAO patientDAO;
 
-    public ConsultationManager() {
-        this.consultationDAO = new ConsultationDAO();
-        this.patientDAO = new PatientDAO();
-
-        this.consultationList = consultationDAO.getAllConsultation();
-        this.patientList = patientDAO.getAllPatients();
-
-        this.doctorList = consultationDAO.getAllDoctors();
-
-        this.consultationMenu = new ConsultationMenu(this);
-    }
-
+//    public ConsultationManager() {
+//        this.consultationDAO = new ConsultationDAO();
+//        this.patientDAO = new PatientDAO();
+//
+//        this.consultationList = consultationDAO.getAllConsultation();
+//        this.patientList = patientDAO.getAllPatients();
+//
+//        this.doctorList = consultationDAO.getAllDoctors();
+//
+//        this.consultationMenu = new ConsultationMenu(this);
+//    }
+    
     public ConsultationManager(ConsultationDAO consultationDAO, PatientDAO patientDAO) {
         this.consultationDAO = consultationDAO;
         this.patientDAO = patientDAO;
         this.consultationList = consultationDAO.getAllConsultation();
         this.patientList = patientDAO.getAllPatients();
         this.doctorList = consultationDAO.getAllDoctors();
-        this.consultationMenu = new ConsultationMenu(this);
+        this.consultationMenu = new ConsultationMenu();
     }
 
     public void consultationManagement(int choice) {
@@ -602,7 +602,9 @@ public class ConsultationManager {
                     viewConsultationRecord(consultationList);
                     break;
                 default:
-                    System.out.println("Invalid choice. Please try again");
+                    if (opt != 0) {
+                        System.out.println("Invalid choice. Please try again");
+                    }
 
             }
 
@@ -888,7 +890,7 @@ public class ConsultationManager {
     //used by doctor
     //***need to do validation -> d.getDoctorId(Doctor) with c.d.getDoctorId
     public void completeConsultation() {//or directly pass consultation to mark as complete(no need ask consultation id)
-
+        System.out.println("");
         System.out.println("Complete Consultation Information");
         System.out.println("================================");
         Consultation selectedConsultation = null;
@@ -913,7 +915,7 @@ public class ConsultationManager {
                     } else if (c.getStatus().equalsIgnoreCase("Completed")) {
                         System.out.println("Consultation is already completed.");
                     } else {
-                        System.out.println("Consultation is  cancenlled or patient no-show.");
+                        System.out.println("Cannot perform this action. Consultation status is \"Cancenlled\" or \"No-show\".");
                     }
                     break; //stop when find the consultation
                 }
@@ -951,6 +953,7 @@ public class ConsultationManager {
 
     //used by doctor
     public void registerNewFollowUp(Consultation originalConsultation) {
+        System.out.println("");
         System.out.println("Registering New Follow-up Appointment");
         System.out.println("Patient: " + originalConsultation.getPatient().getName() + " | Doctor: " + originalConsultation.getDoctor().getName());
 

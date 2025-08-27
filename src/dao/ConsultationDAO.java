@@ -18,13 +18,13 @@ import java.time.LocalDateTime;
 public class ConsultationDAO {
 
     private ListInterface<Consultation> consultationList = new CircularDoublyLinkedList<>();
-    private ListInterface<Doctor> doctorList = new CircularDoublyLinkedList<>();
-    private ListInterface<Patient> patientList = new CircularDoublyLinkedList<>();
-    private static int counter = 0;
+    private ListInterface<Doctor> doctorList = new CircularDoublyLinkedList<>();;
+    private ListInterface<Patient> patientList;
+    private int counter = 0;
 
     public ConsultationDAO() {
         PatientDAO patientDAO = new PatientDAO();
-        ListInterface<Patient> patientList = patientDAO.getAllPatients();
+        patientList = patientDAO.getAllPatients();
 
         Patient patient1 = patientList.getEntry(1);
         Patient patient2 = patientList.getEntry(2);
@@ -32,8 +32,6 @@ public class ConsultationDAO {
         Patient patient4 = patientList.getEntry(4);
         Patient patient5 = patientList.getEntry(5);
 
-        //temporarily placement for doctor initializer
-        //remove after combine
         Doctor d1 = new Doctor(
                 "S013", "Dr. White", "General Practitioner (GP)", "Tuesday-Saturday 10AM-06PM"
         );
@@ -51,7 +49,6 @@ public class ConsultationDAO {
         doctorList.add(d1);
         doctorList.add(d2);
         doctorList.add(d3);
-        //end doctor initialization
 
         Consultation c1 = new Consultation(generateID(), patient1, d1,
                 LocalDateTime.of(2025, 8, 6, 9, 0), "Fever");
@@ -98,7 +95,7 @@ public class ConsultationDAO {
 
     }
 
-    public static String generateID() {
+    public String generateID() {
         counter++;
         return String.format("C%04d", counter);
     }

@@ -15,10 +15,10 @@ import java.time.LocalDate;
  */
 public class PharmacyManager {
 
-    private final TreatmentDAO treatmentDAO = new TreatmentDAO();
+    private TreatmentDAO treatmentDAO;
 
-    public PharmacyManager() {
-        // Constructor - doesn't need initialize, DAO handle already
+    public PharmacyManager(TreatmentDAO treatmentDAO) {
+        this.treatmentDAO=treatmentDAO;
     }
 
     // Existing methods

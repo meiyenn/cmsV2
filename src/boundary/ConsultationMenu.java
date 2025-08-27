@@ -22,18 +22,15 @@ public class ConsultationMenu {
 
     private ConsultationManager consultationManager;
     Scanner sc = new Scanner(System.in);
-//
-//    //boundary - let user enter input
-//    //control handle logic only
 
     public ConsultationMenu() {
 
     }
 
-    public ConsultationMenu(ConsultationManager consultationManager) {
-        this.consultationManager = consultationManager;
-    }
-
+//    public ConsultationMenu(ConsultationManager consultationManager) {
+//        this.consultationManager = consultationManager;
+//    }
+    
     public int consultationMenu() {
         int choice = -1;
         boolean back;

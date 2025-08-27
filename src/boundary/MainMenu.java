@@ -8,9 +8,12 @@ import adt.ListInterface;
 import control.ConsultationManager;
 import control.PatientManager;
 import control.DoctorManager;
+import control.PharmacyManager;
+import control.TreatmentManager;
 import dao.ConsultationDAO;
 import dao.PatientDAO;
 import dao.DoctorDAO;
+import dao.TreatmentDAO;
 import entity.Patient;
 import entity.Treatment;
 import java.util.Scanner;
@@ -23,8 +26,14 @@ import entity.Doctor;
 public class MainMenu {
 
     private PatientDAO patientDAO = new PatientDAO();
-    private DoctorDAO doctorDAO = new DoctorDAO();
     private ConsultationDAO consultationDAO = new ConsultationDAO();
+    private TreatmentDAO treatmentDAO = new TreatmentDAO(consultationDAO);
+    
+    private ConsultationManager consultationManager = new ConsultationManager(consultationDAO, patientDAO);
+    private PharmacyManager pharmacyManager = new PharmacyManager(treatmentDAO);
+
+    TreatmentManager treatmentManager = new TreatmentManager(treatmentDAO,consultationDAO,pharmacyManager,consultationManager);
+    
     private Scanner scanner = new Scanner(System.in);
 
     public MainMenu() {
@@ -49,7 +58,6 @@ public class MainMenu {
                     switch (choice) {
                         case 1:
                             System.out.println("\nRedirecting to Patient Portal...");
-                            //PatientDAO patientDAO = new PatientDAO();
                             PatientManager patientManager = new PatientManager(patientDAO);
                             PatientMenu patientMenu = new PatientMenu(patientManager);
                             patientMenu.start();
@@ -61,17 +69,17 @@ public class MainMenu {
                             break;
                         case 3:
                             System.out.println("\nRedirecting to Consultation Management...");
-                            ConsultationManager consultationManager = new ConsultationManager(consultationDAO, patientDAO);
+                            //ConsultationManager consultationManager = new ConsultationManager(consultationDAO, patientDAO);
                             consultationManager.runConsultationMenu();
                             break;
                         case 4:
                             System.out.println("\nRedirecting to Treatment Management...");
-                            TreatmentMenu treatmentMenu = new TreatmentMenu();
+                            TreatmentMenu treatmentMenu = new TreatmentMenu(treatmentManager);
                             treatmentMenu.runTreatmentMenu();
                             break;
                         case 5:
                             System.out.println("\nRedirecting to Pharmacy Management...");
-                            PharmacyMenu pharmacyMenu = new PharmacyMenu();
+                            PharmacyMenu pharmacyMenu = new PharmacyMenu(pharmacyManager);
                             pharmacyMenu.runPharmacyMenu();
                             break;
                         case 6:
